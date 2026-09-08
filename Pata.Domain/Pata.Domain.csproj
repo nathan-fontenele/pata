@@ -1,0 +1,20 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>net10.0</TargetFramework>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <Folder Include="Comum\" />
+      <Folder Include="Entidades\" />
+      <Folder Include="Repositorios\" />
+      <Folder Include="ObjetosValor\" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <Compile Remove="Comum\RaizAgregadaAuditavel.cs" />
+    </ItemGroup>
+
+</Project>
