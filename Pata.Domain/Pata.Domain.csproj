@@ -7,14 +7,9 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <Folder Include="Comum\" />
-      <Folder Include="Entidades\" />
+      <Folder Include="Entidades\Tutor\" />
       <Folder Include="Repositorios\" />
       <Folder Include="ObjetosValor\" />
-    </ItemGroup>
-
-    <ItemGroup>
-      <Compile Remove="Comum\RaizAgregadaAuditavel.cs" />
     </ItemGroup>
 
 </Project>
