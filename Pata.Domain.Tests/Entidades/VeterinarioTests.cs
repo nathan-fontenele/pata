@@ -1,0 +1,64 @@
+using Pata.Domain.Entidades.Veterinario;
+using Pata.Domain.ObjetosValor;
+
+namespace Pata.Domain.Tests.Entidades;
+
+public class VeterinarioTests
+{
+    private static readonly Email EmailValido = new("veterinario@pata.com.br");
+    private static readonly Telefone TelefoneValido = new("(11) 91234-5678");
+    private static readonly Crmv CrmvValido = new("114212", "SP");
+
+    [Fact]
+    public void DeveCadastrarVeterinarioComCrmvValido()
+    {
+        var veterinario = new Veterinario(
+            "  Ana Silva  ",
+            EmailValido,
+            TelefoneValido,
+            CrmvValido,
+            "  Clinica de pequenos animais  ");
+
+        Assert.NotEqual(Guid.Empty, veterinario.Id);
+        Assert.Equal("Ana Silva", veterinario.Nome);
+        Assert.Equal(EmailValido, veterinario.Email);
+        Assert.Equal(TelefoneValido, veterinario.Telefone);
+        Assert.Equal(CrmvValido, veterinario.Crmv);
+        Assert.Equal("Clinica de pequenos animais", veterinario.Especialidade);
+    }
+
+    [Fact]
+    public void DeveRejeitarCrmvNuloNoCadastro()
+    {
+        Assert.Throws<ArgumentNullException>(() => new Veterinario(
+            "Ana Silva",
+            EmailValido,
+            TelefoneValido,
+            null!,
+            "Clinica de pequenos animais"));
+    }
+
+    [Theory]
+    [InlineData("", "Clinica")]
+    [InlineData("   ", "Clinica")]
+    [InlineData("Ana Silva", "")]
+    [InlineData("Ana Silva", "   ")]
+    public void DeveRejeitarDadosObrigatoriosInvalidos(string nome, string especialidade)
+    {
+        Assert.Throws<ArgumentException>(() => new Veterinario(
+            nome,
+            EmailValido,
+            TelefoneValido,
+            CrmvValido,
+            especialidade));
+    }
+
+    [Fact]
+    public void DeveRejeitarObjetosValorNulos()
+    {
+        Assert.Throws<ArgumentNullException>(() => new Veterinario(
+            "Ana Silva", null!, TelefoneValido, CrmvValido, "Clinica"));
+        Assert.Throws<ArgumentNullException>(() => new Veterinario(
+            "Ana Silva", EmailValido, null!, CrmvValido, "Clinica"));
+    }
+}
