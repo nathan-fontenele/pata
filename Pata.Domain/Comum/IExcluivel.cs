@@ -1,6 +1,8 @@
 namespace Pata.Domain.Comum;
 
-public class IExcluivel
+public interface IExcluivel
 {
-    
+    bool Excluido { get; }
+    DateTime? ExcluidoEm { get; }
+    string? ExcluidoPor { get; }
 }

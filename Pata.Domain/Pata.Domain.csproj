@@ -7,9 +7,7 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <Folder Include="Entidades\Tutor\" />
       <Folder Include="Repositorios\" />
-      <Folder Include="ObjetosValor\" />
     </ItemGroup>
 
 </Project>
