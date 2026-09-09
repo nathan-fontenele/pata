@@ -67,4 +67,40 @@ public class TutorTests
         Assert.Null(tutor.Email);
         Assert.Null(tutor.Telefone);
     }
+
+    [Fact]
+    public void DeveExcluirTutorLogicamente()
+    {
+        var tutor = new Tutor("Maria Silva", CpfValido, null, null);
+        var excluidoEm = new DateTime(2026, 8, 9, 12, 30, 0, DateTimeKind.Utc);
+
+        tutor.Excluir(excluidoEm, "  usuario@pata.com.br  ");
+
+        Assert.True(tutor.Excluido);
+        Assert.Equal(excluidoEm, tutor.ExcluidoEm);
+        Assert.Equal("usuario@pata.com.br", tutor.ExcluidoPor);
+    }
+
+    [Fact]
+    public void DeveRecuperarTutorExcluido()
+    {
+        var tutor = new Tutor("Maria Silva", CpfValido, null, null);
+        tutor.Excluir(DateTime.UtcNow, "usuario@pata.com.br");
+
+        tutor.Recuperar();
+
+        Assert.False(tutor.Excluido);
+        Assert.Null(tutor.ExcluidoEm);
+        Assert.Null(tutor.ExcluidoPor);
+    }
+
+    [Fact]
+    public void DeveRejeitarDataDeExclusaoForaDeUtc()
+    {
+        var tutor = new Tutor("Maria Silva", CpfValido, null, null);
+        var excluidoEm = new DateTime(2026, 8, 9, 12, 30, 0, DateTimeKind.Local);
+
+        Assert.Throws<ArgumentException>(() =>
+            tutor.Excluir(excluidoEm, "usuario@pata.com.br"));
+    }
 }

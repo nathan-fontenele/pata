@@ -9,11 +9,23 @@ public interface IRepositorioTutor
         Guid id,
         CancellationToken tokenCancelamento = default);
 
+    Task<TutorAgregado?> ObterPorIdIncluindoExcluidosAsync(
+        Guid id,
+        CancellationToken tokenCancelamento = default);
+
     Task<TutorAgregado?> ObterPorCpfAsync(
         Cpf cpf,
         CancellationToken tokenCancelamento = default);
 
+    Task<TutorAgregado?> ObterPorCpfIncluindoExcluidosAsync(
+        Cpf cpf,
+        CancellationToken tokenCancelamento = default);
+
     Task<bool> ExisteCpfAsync(
+        Cpf cpf,
+        CancellationToken tokenCancelamento = default);
+
+    Task<bool> ExisteCpfIncluindoExcluidosAsync(
         Cpf cpf,
         CancellationToken tokenCancelamento = default);
 

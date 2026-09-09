@@ -19,8 +19,29 @@ public abstract class RaizAgregadaAuditavel<TId> : Entidade<TId>, IAuditavel, IE
     public DateTime? ExcluidoEm { get; private set; }
     public string? ExcluidoPor { get; private set; }
 
+    public void Excluir(DateTime excluidoEm, string excluidoPor)
+    {
+        if (Excluido)
+            return;
+
+        if (excluidoEm == default)
+            throw new ArgumentException("A data de exclusao e obrigatoria.", nameof(excluidoEm));
+
+        if (excluidoEm.Kind != DateTimeKind.Utc)
+            throw new ArgumentException("A data de exclusao deve estar em UTC.", nameof(excluidoEm));
+
+        ArgumentException.ThrowIfNullOrWhiteSpace(excluidoPor);
+
+        Excluido = true;
+        ExcluidoEm = excluidoEm;
+        ExcluidoPor = excluidoPor.Trim();
+    }
+
     public void Recuperar()
     {
+        if (!Excluido)
+            return;
+
         Excluido = false;
         ExcluidoEm = null;
         ExcluidoPor = null;

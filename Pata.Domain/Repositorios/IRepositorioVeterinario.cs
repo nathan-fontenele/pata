@@ -9,11 +9,23 @@ public interface IRepositorioVeterinario
         Guid id,
         CancellationToken tokenCancelamento = default);
 
+    Task<VeterinarioAgregado?> ObterPorIdIncluindoExcluidosAsync(
+        Guid id,
+        CancellationToken tokenCancelamento = default);
+
     Task<VeterinarioAgregado?> ObterPorCrmvAsync(
         Crmv crmv,
         CancellationToken tokenCancelamento = default);
 
+    Task<VeterinarioAgregado?> ObterPorCrmvIncluindoExcluidosAsync(
+        Crmv crmv,
+        CancellationToken tokenCancelamento = default);
+
     Task<bool> ExisteCrmvAsync(
+        Crmv crmv,
+        CancellationToken tokenCancelamento = default);
+
+    Task<bool> ExisteCrmvIncluindoExcluidosAsync(
         Crmv crmv,
         CancellationToken tokenCancelamento = default);
 

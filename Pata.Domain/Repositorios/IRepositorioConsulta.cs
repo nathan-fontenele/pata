@@ -8,6 +8,10 @@ public interface IRepositorioConsulta
         Guid id,
         CancellationToken tokenCancelamento = default);
 
+    Task<ConsultaAgregado?> ObterPorIdIncluindoExcluidosAsync(
+        Guid id,
+        CancellationToken tokenCancelamento = default);
+
     Task AdicionarAsync(
         ConsultaAgregado consulta,
         CancellationToken tokenCancelamento = default);
