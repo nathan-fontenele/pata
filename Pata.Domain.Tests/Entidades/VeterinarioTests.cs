@@ -61,4 +61,28 @@ public class VeterinarioTests
         Assert.Throws<ArgumentNullException>(() => new Veterinario(
             "Ana Silva", EmailValido, null!, CrmvValido, "Clinica"));
     }
+
+    [Fact]
+    public void DeveAlterarDadosDoVeterinario()
+    {
+        var veterinario = new Veterinario(
+            "Ana Silva",
+            EmailValido,
+            TelefoneValido,
+            CrmvValido,
+            "Clinica");
+        var novoEmail = new Email("ana.silva@pata.com.br");
+        var novoTelefone = new Telefone("(11) 3456-7890");
+
+        veterinario.AlterarNome("  Ana Souza  ");
+        veterinario.AlterarEmail(novoEmail);
+        veterinario.AlterarTelefone(novoTelefone);
+        veterinario.AlterarEspecialidade("  Cirurgia  ");
+
+        Assert.Equal("Ana Souza", veterinario.Nome);
+        Assert.Equal(novoEmail, veterinario.Email);
+        Assert.Equal(novoTelefone, veterinario.Telefone);
+        Assert.Equal("Cirurgia", veterinario.Especialidade);
+        Assert.Equal(CrmvValido, veterinario.Crmv);
+    }
 }

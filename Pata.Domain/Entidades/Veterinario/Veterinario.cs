@@ -35,6 +35,27 @@ public sealed class Veterinario : RaizAgregadaAuditavel<Guid>
             nameof(especialidade));
     }
 
+    public void AlterarNome(string nome) =>
+        Nome = ValidarTexto(nome, TamanhoMaximoNome, nameof(nome));
+
+    public void AlterarEmail(Email email)
+    {
+        ArgumentNullException.ThrowIfNull(email);
+        Email = email;
+    }
+
+    public void AlterarTelefone(Telefone telefone)
+    {
+        ArgumentNullException.ThrowIfNull(telefone);
+        Telefone = telefone;
+    }
+
+    public void AlterarEspecialidade(string especialidade) =>
+        Especialidade = ValidarTexto(
+            especialidade,
+            TamanhoMaximoEspecialidade,
+            nameof(especialidade));
+
     private static string ValidarTexto(string valor, int tamanhoMaximo, string nomeParametro)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(valor, nomeParametro);
