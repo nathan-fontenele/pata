@@ -1,5 +1,6 @@
 using Pata.Application.Comum.Abstracoes;
 using Pata.Application.Comum.Mensagens;
+using Pata.Domain.Excecoes;
 using Pata.Domain.Repositorios;
 
 namespace Pata.Application.Funcionalidades.Tutor.Comandos.ExcluirTutor;
@@ -14,7 +15,7 @@ public sealed class ExcluirTutorManipulador(
         CancellationToken tokenCancelamento)
     {
         var tutor = await repositorioTutor.ObterPorIdAsync(comando.Id, tokenCancelamento)
-                    ?? throw new KeyNotFoundException("Tutor nao encontrado.");
+                    ?? throw new RecursoNaoEncontradoException("Tutor nao encontrado.");
 
         tutor.Excluir(relogio.UtcAgora, usuarioAtual.Identificador);
 

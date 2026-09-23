@@ -1,3 +1,5 @@
+using Pata.Domain.Excecoes;
+
 namespace Pata.Domain.ObjetosValor;
 
 public sealed record Telefone
@@ -11,12 +13,13 @@ public sealed record Telefone
 
     public Telefone(string valor)
     {
-        ArgumentException.ThrowIfNullOrWhiteSpace(valor);
+        if (string.IsNullOrWhiteSpace(valor))
+            throw new ErroDeValidacao("Telefone e obrigatorio.", nameof(valor));
 
         var telefoneNormalizado = Normalizar(valor);
 
         if (!EhValidoNormalizado(telefoneNormalizado))
-            throw new ArgumentException("Telefone invalido.", nameof(valor));
+            throw new ErroDeValidacao("Telefone invalido.", nameof(valor));
 
         Valor = telefoneNormalizado;
     }
@@ -47,7 +50,7 @@ public sealed record Telefone
         if (valor.Any(caractere => !char.IsDigit(caractere)
                                    && caractere is not '(' and not ')' and not '-' and not '+' and not '.'
                                    && !char.IsWhiteSpace(caractere)))
-            throw new ArgumentException("Telefone contem caracteres invalidos.", nameof(valor));
+            throw new ErroDeValidacao("Telefone contem caracteres invalidos.", nameof(valor));
 
         var digitos = string.Concat(valor.Where(char.IsDigit));
 

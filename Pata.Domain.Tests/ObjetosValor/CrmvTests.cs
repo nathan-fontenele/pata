@@ -1,4 +1,5 @@
 using Pata.Domain.ObjetosValor;
+using Pata.Domain.Excecoes;
 
 namespace Pata.Domain.Tests.ObjetosValor;
 
@@ -64,7 +65,7 @@ public class CrmvTests
     public void DeveRejeitarCrmvInvalido(string numero, string uf)
     {
         Assert.False(Crmv.EhValido(numero, uf));
-        Assert.Throws<ArgumentException>(() => new Crmv(numero, uf));
+        Assert.Throws<ErroDeValidacao>(() => new Crmv(numero, uf));
     }
 
     [Fact]

@@ -1,4 +1,5 @@
 using Pata.Application.Comum.Mensagens;
+using Pata.Domain.Excecoes;
 using Pata.Domain.ObjetosValor;
 using Pata.Domain.Repositorios;
 
@@ -14,7 +15,7 @@ public sealed class AtualizarVeterinarioManipulador(IRepositorioVeterinario repo
         var veterinario = await repositorioVeterinario.ObterPorIdAsync(
                               comando.Id,
                               tokenCancelamento)
-                          ?? throw new KeyNotFoundException("Veterinario nao encontrado.");
+                          ?? throw new RecursoNaoEncontradoException("Veterinario nao encontrado.");
 
         veterinario.AlterarNome(comando.Nome);
         veterinario.AlterarEmail(new Email(comando.Email));

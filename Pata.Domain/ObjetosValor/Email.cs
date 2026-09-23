@@ -1,4 +1,5 @@
 using System.Net.Mail;
+using Pata.Domain.Excecoes;
 
 namespace Pata.Domain.ObjetosValor;
 
@@ -10,12 +11,13 @@ public sealed record Email
 
     public Email(string valor)
     {
-        ArgumentException.ThrowIfNullOrWhiteSpace(valor);
+        if (string.IsNullOrWhiteSpace(valor))
+            throw new ErroDeValidacao("E-mail e obrigatorio.", nameof(valor));
 
         var emailNormalizado = valor.Trim();
 
         if (!EhValido(emailNormalizado))
-            throw new ArgumentException("E-mail invalido.", nameof(valor));
+            throw new ErroDeValidacao("E-mail invalido.", nameof(valor));
 
         Valor = emailNormalizado;
     }

@@ -1,4 +1,5 @@
 using Pata.Application.Comum.Mensagens;
+using Pata.Domain.Excecoes;
 using Pata.Domain.ObjetosValor;
 using Pata.Domain.Repositorios;
 using VeterinarioAgregado = Pata.Domain.Entidades.Veterinario.Veterinario;
@@ -17,7 +18,7 @@ public sealed class CriarVeterinarioManipulador(IRepositorioVeterinario reposito
         if (await repositorioVeterinario.ExisteCrmvIncluindoExcluidosAsync(
                 crmv,
                 tokenCancelamento))
-            throw new InvalidOperationException("Ja existe um veterinario com o CRMV informado.");
+            throw new ConflitoException("Ja existe um veterinario com o CRMV informado.");
 
         var veterinario = new VeterinarioAgregado(
             comando.Nome,

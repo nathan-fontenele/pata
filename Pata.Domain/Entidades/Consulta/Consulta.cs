@@ -1,5 +1,6 @@
 using Pata.Domain.Comum;
 using Pata.Domain.Entidades.Prontuario;
+using Pata.Domain.Excecoes;
 using ProntuarioClinico = Pata.Domain.Entidades.Prontuario.Prontuario;
 
 namespace Pata.Domain.Entidades.Consulta;
@@ -33,13 +34,19 @@ public sealed class Consulta : RaizAgregadaAuditavel<Guid>
     public Guid VeterinarioId { get; private set; }
     public Guid TutorId { get; private set; }
     public DateTimeOffset DataHora { get; private set; }
+    public DateTimeOffset? ConfirmadaEm { get; private set; }
     public StatusConsulta Status { get; private set; }
     public ProntuarioClinico? Prontuario { get; private set; }
 
-    public void Confirmar()
+    public void Confirmar(DateTimeOffset confirmadaEm)
     {
         GarantirStatus(StatusConsulta.Agendada, "confirmada");
+
+        if (confirmadaEm == default)
+            throw new ErroDeValidacao("A data de confirmacao e obrigatoria.", nameof(confirmadaEm));
+
         Status = StatusConsulta.Confirmada;
+        ConfirmadaEm = confirmadaEm;
     }
 
     public void Cancelar()
@@ -48,16 +55,16 @@ public sealed class Consulta : RaizAgregadaAuditavel<Guid>
         Status = StatusConsulta.Cancelada;
     }
 
-    public void Realizar(
+    public void Finalizar(
         IEnumerable<Sintoma> sintomas,
         string? diagnostico,
         string? prescricao,
         DateTimeOffset dataRegistro)
     {
-        GarantirStatus(StatusConsulta.Confirmada, "realizada");
+        GarantirPodeFinalizar();
 
         if (Prontuario is not null)
-            throw new InvalidOperationException("A consulta ja possui um prontuario.");
+            throw new RegraDeNegocioException("A consulta ja possui um prontuario.");
 
         var prontuario = new ProntuarioClinico(
             Guid.NewGuid(),
@@ -68,8 +75,15 @@ public sealed class Consulta : RaizAgregadaAuditavel<Guid>
             dataRegistro);
 
         Prontuario = prontuario;
-        Status = StatusConsulta.Realizada;
+        Status = StatusConsulta.Finalizada;
     }
+
+    public void Realizar(
+        IEnumerable<Sintoma> sintomas,
+        string? diagnostico,
+        string? prescricao,
+        DateTimeOffset dataRegistro) =>
+        Finalizar(sintomas, diagnostico, prescricao, dataRegistro);
 
     public void Remarcar(DateTimeOffset novaDataHora, DateTimeOffset dataAtual)
     {
@@ -78,6 +92,7 @@ public sealed class Consulta : RaizAgregadaAuditavel<Guid>
 
         DataHora = novaDataHora;
         Status = StatusConsulta.Agendada;
+        ConfirmadaEm = null;
     }
 
     public void SubstituirVeterinario(Guid veterinarioId)
@@ -90,22 +105,29 @@ public sealed class Consulta : RaizAgregadaAuditavel<Guid>
 
     private void GarantirConsultaEmAberto(string operacao)
     {
-        if (Status is StatusConsulta.Cancelada or StatusConsulta.Realizada)
-            throw new InvalidOperationException(
+        if (Status is StatusConsulta.Cancelada or StatusConsulta.Finalizada)
+            throw new RegraDeNegocioException(
                 $"Uma consulta {Status.ToString().ToLowerInvariant()} nao pode ser {operacao}.");
     }
 
     private void GarantirStatus(StatusConsulta statusEsperado, string operacao)
     {
         if (Status != statusEsperado)
-            throw new InvalidOperationException(
+            throw new RegraDeNegocioException(
                 $"A consulta deve estar {statusEsperado.ToString().ToLowerInvariant()} para ser {operacao}.");
+    }
+
+    private void GarantirPodeFinalizar()
+    {
+        if (Status is not (StatusConsulta.Agendada or StatusConsulta.Confirmada))
+            throw new RegraDeNegocioException(
+                "Apenas consultas agendadas ou confirmadas podem ser finalizadas.");
     }
 
     private static void ValidarIdentificador(Guid id, string nomeParametro, string entidade)
     {
         if (id == Guid.Empty)
-            throw new ArgumentException($"{entidade} e obrigatorio.", nomeParametro);
+            throw new ErroDeValidacao($"{entidade} e obrigatorio.", nomeParametro);
     }
 
     private static void ValidarDataFutura(
@@ -114,8 +136,8 @@ public sealed class Consulta : RaizAgregadaAuditavel<Guid>
         string nomeParametro)
     {
         if (dataHora <= dataAtual)
-            throw new ArgumentOutOfRangeException(
-                nomeParametro,
-                "A data e hora da consulta devem ser posteriores a data atual.");
+            throw new ErroDeValidacao(
+                "A data e hora da consulta devem ser posteriores a data atual.",
+                nomeParametro);
     }
 }

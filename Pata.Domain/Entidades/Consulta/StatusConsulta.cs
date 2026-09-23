@@ -5,5 +5,6 @@ public enum StatusConsulta
     Agendada,
     Confirmada,
     Cancelada,
-    Realizada
+    EmAndamento,
+    Finalizada
 }

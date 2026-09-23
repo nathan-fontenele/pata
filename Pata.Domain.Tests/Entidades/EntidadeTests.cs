@@ -1,4 +1,5 @@
 using Pata.Domain.Comum;
+using Pata.Domain.Excecoes;
 
 namespace Pata.Domain.Tests.Entidades;
 
@@ -28,7 +29,7 @@ public class EntidadeTests
     [Fact]
     public void DeveRejeitarIdentificadorVazio()
     {
-        Assert.Throws<ArgumentException>(() => new EntidadeTeste(Guid.Empty));
+        Assert.Throws<ErroDeValidacao>(() => new EntidadeTeste(Guid.Empty));
     }
 
     private sealed class EntidadeTeste(Guid id) : Entidade<Guid>(id);

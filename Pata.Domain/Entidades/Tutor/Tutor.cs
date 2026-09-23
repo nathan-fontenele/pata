@@ -1,5 +1,6 @@
 using Pata.Domain.Comum;
 using Pata.Domain.Entidades.Animal.Enum;
+using Pata.Domain.Excecoes;
 using Pata.Domain.ObjetosValor;
 
 namespace Pata.Domain.Entidades.Tutor;
@@ -10,19 +11,26 @@ public class Tutor : RaizAgregadaAuditavel<Guid>
 
     public string Nome { get; private set; }
     public Cpf Cpf { get; private set; }
-    public Email? Email { get; private set; }
-    public Telefone? Telefone { get; private set; }
+    public Email Email { get; private set; }
+    public Telefone Telefone { get; private set; }
     public IReadOnlyCollection<Animal.Animal> Animais => _animais.AsReadOnly();
 
     private Tutor()
     {
         Nome = null!;
         Cpf = null!;
+        Email = null!;
+        Telefone = null!;
     }
 
-    public Tutor(string nome, Cpf cpf, Email? email, Telefone? telefone) : base(Guid.NewGuid())
+    public Tutor(string nome, Cpf cpf, Email email, Telefone telefone) : base(Guid.NewGuid())
     {
-        ArgumentNullException.ThrowIfNull(cpf);
+        if (cpf is null)
+            throw new ErroDeValidacao("CPF e obrigatorio.", nameof(cpf));
+        if (email is null)
+            throw new ErroDeValidacao("E-mail e obrigatorio.", nameof(email));
+        if (telefone is null)
+            throw new ErroDeValidacao("Telefone e obrigatorio.", nameof(telefone));
 
         Nome = ValidarNome(nome);
         Cpf = cpf;
@@ -32,17 +40,35 @@ public class Tutor : RaizAgregadaAuditavel<Guid>
 
     public void AlterarNome(string nome) => Nome = ValidarNome(nome);
 
-    public void AlterarEmail(Email? email) => Email = email;
+    public void AlterarEmail(Email email)
+    {
+        if (email is null)
+            throw new ErroDeValidacao("E-mail e obrigatorio.", nameof(email));
+        Email = email;
+    }
 
-    public void AlterarTelefone(Telefone? telefone) => Telefone = telefone;
+    public void AlterarTelefone(Telefone telefone)
+    {
+        if (telefone is null)
+            throw new ErroDeValidacao("Telefone e obrigatorio.", nameof(telefone));
+        Telefone = telefone;
+    }
 
     public Animal.Animal AdicionarAnimal(
         string nome,
         Especie especie,
+        string raca,
         DateOnly dataNascimento,
         DateOnly dataAtual)
     {
-        var animal = new Animal.Animal(Guid.NewGuid(), Id, nome, especie, dataNascimento, dataAtual);
+        var animal = new Animal.Animal(
+            Guid.NewGuid(),
+            Id,
+            nome,
+            especie,
+            raca,
+            dataNascimento,
+            dataAtual);
         _animais.Add(animal);
         return animal;
     }
@@ -51,9 +77,10 @@ public class Tutor : RaizAgregadaAuditavel<Guid>
         Guid animalId,
         string nome,
         Especie especie,
+        string raca,
         DateOnly dataNascimento,
         DateOnly dataAtual) =>
-        ObterAnimal(animalId).AlterarDados(nome, especie, dataNascimento, dataAtual);
+        ObterAnimal(animalId).AlterarDados(nome, especie, raca, dataNascimento, dataAtual);
 
     public void RemoverAnimal(Guid animalId)
     {
@@ -63,16 +90,17 @@ public class Tutor : RaizAgregadaAuditavel<Guid>
 
     private static string ValidarNome(string nome)
     {
-        ArgumentException.ThrowIfNullOrWhiteSpace(nome);
+        if (string.IsNullOrWhiteSpace(nome))
+            throw new ErroDeValidacao("Nome e obrigatorio.", nameof(nome));
         return nome.Trim();
     }
 
     private Animal.Animal ObterAnimal(Guid animalId)
     {
         if (animalId == Guid.Empty)
-            throw new ArgumentException("Animal e obrigatorio.", nameof(animalId));
+            throw new ErroDeValidacao("Animal e obrigatorio.", nameof(animalId));
 
         return _animais.FirstOrDefault(animal => animal.Id == animalId)
-               ?? throw new KeyNotFoundException("Animal nao encontrado neste tutor.");
+               ?? throw new RecursoNaoEncontradoException("Animal nao encontrado neste tutor.");
     }
 }

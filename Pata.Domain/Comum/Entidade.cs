@@ -1,3 +1,5 @@
+using Pata.Domain.Excecoes;
+
 namespace Pata.Domain.Comum;
 
 public abstract class Entidade<TId>
@@ -10,7 +12,7 @@ public abstract class Entidade<TId>
     protected Entidade(TId id)
     {
         if (EqualityComparer<TId>.Default.Equals(id, default!))
-            throw new ArgumentException("O identificador e obrigatorio.", nameof(id));
+            throw new ErroDeValidacao("O identificador e obrigatorio.", nameof(id));
 
         Id = id;
     }

@@ -4,7 +4,7 @@ public sealed record TutorResumoDto(
     Guid Id,
     string Nome,
     string Cpf,
-    string? Email,
-    string? Telefone,
+    string Email,
+    string Telefone,
     bool Excluido,
     DateTime? ExcluidoEm);

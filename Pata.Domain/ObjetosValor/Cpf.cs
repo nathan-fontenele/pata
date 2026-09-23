@@ -1,3 +1,5 @@
+using Pata.Domain.Excecoes;
+
 namespace Pata.Domain.ObjetosValor;
 
 public sealed record Cpf
@@ -8,12 +10,13 @@ public sealed record Cpf
 
     public Cpf(string valor)
     {
-        ArgumentException.ThrowIfNullOrWhiteSpace(valor);
+        if (string.IsNullOrWhiteSpace(valor))
+            throw new ErroDeValidacao("CPF e obrigatorio.", nameof(valor));
 
         var cpfNormalizado = Normalizar(valor);
 
         if (!EhValido(cpfNormalizado))
-            throw new ArgumentException("CPF invalido.", nameof(valor));
+            throw new ErroDeValidacao("CPF invalido.", nameof(valor));
 
         Valor = cpfNormalizado;
     }
@@ -49,7 +52,7 @@ public sealed record Cpf
         if (valor.Any(caractere => !char.IsDigit(caractere)
                                    && caractere is not '.' and not '-'
                                    && !char.IsWhiteSpace(caractere)))
-            throw new ArgumentException("CPF contem caracteres invalidos.", nameof(valor));
+            throw new ErroDeValidacao("CPF contem caracteres invalidos.", nameof(valor));
 
         return string.Concat(valor.Where(char.IsDigit));
     }

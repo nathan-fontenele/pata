@@ -1,4 +1,5 @@
 using Pata.Application.Comum.Mensagens;
+using Pata.Domain.Excecoes;
 using Pata.Domain.Repositorios;
 
 namespace Pata.Application.Funcionalidades.Veterinario.Comandos.RecuperarVeterinario;
@@ -13,7 +14,7 @@ public sealed class RecuperarVeterinarioManipulador(IRepositorioVeterinario repo
         var veterinario = await repositorioVeterinario.ObterPorIdIncluindoExcluidosAsync(
                               comando.Id,
                               tokenCancelamento)
-                          ?? throw new KeyNotFoundException("Veterinario nao encontrado.");
+                          ?? throw new RecursoNaoEncontradoException("Veterinario nao encontrado.");
 
         veterinario.Recuperar();
 

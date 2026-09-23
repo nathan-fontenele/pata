@@ -1,3 +1,5 @@
+using Pata.Domain.Excecoes;
+
 namespace Pata.Domain.ObjetosValor;
 
 public sealed record Crmv
@@ -18,14 +20,16 @@ public sealed record Crmv
 
     public Crmv(string numero, string uf)
     {
-        ArgumentException.ThrowIfNullOrWhiteSpace(numero);
-        ArgumentException.ThrowIfNullOrWhiteSpace(uf);
+        if (string.IsNullOrWhiteSpace(numero))
+            throw new ErroDeValidacao("Numero do CRMV e obrigatorio.", nameof(numero));
+        if (string.IsNullOrWhiteSpace(uf))
+            throw new ErroDeValidacao("UF do CRMV e obrigatoria.", nameof(uf));
 
         var numeroNormalizado = NormalizarNumero(numero);
         var ufNormalizada = NormalizarUf(uf);
 
         if (!EhValidoNormalizado(numeroNormalizado, ufNormalizada))
-            throw new ArgumentException("CRMV invalido.");
+            throw new ErroDeValidacao("CRMV invalido.");
 
         Numero = numeroNormalizado;
         Uf = ufNormalizada;
@@ -53,7 +57,9 @@ public sealed record Crmv
         var numeroSemEspacos = numero.Trim();
 
         if (numeroSemEspacos.Any(caractere => caractere is < '0' or > '9'))
-            throw new ArgumentException("O numero do CRMV deve conter apenas digitos.", nameof(numero));
+            throw new ErroDeValidacao(
+                "O numero do CRMV deve conter apenas digitos.",
+                nameof(numero));
 
         return numeroSemEspacos.TrimStart('0') switch
         {

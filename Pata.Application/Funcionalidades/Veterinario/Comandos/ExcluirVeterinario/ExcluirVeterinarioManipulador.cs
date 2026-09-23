@@ -1,5 +1,6 @@
 using Pata.Application.Comum.Abstracoes;
 using Pata.Application.Comum.Mensagens;
+using Pata.Domain.Excecoes;
 using Pata.Domain.Repositorios;
 
 namespace Pata.Application.Funcionalidades.Veterinario.Comandos.ExcluirVeterinario;
@@ -16,7 +17,7 @@ public sealed class ExcluirVeterinarioManipulador(
         var veterinario = await repositorioVeterinario.ObterPorIdAsync(
                               comando.Id,
                               tokenCancelamento)
-                          ?? throw new KeyNotFoundException("Veterinario nao encontrado.");
+                          ?? throw new RecursoNaoEncontradoException("Veterinario nao encontrado.");
 
         veterinario.Excluir(relogio.UtcAgora, usuarioAtual.Identificador);
 

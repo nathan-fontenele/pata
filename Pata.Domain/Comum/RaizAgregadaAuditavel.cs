@@ -1,3 +1,5 @@
+using Pata.Domain.Excecoes;
+
 namespace Pata.Domain.Comum;
 
 public abstract class RaizAgregadaAuditavel<TId> : Entidade<TId>, IAuditavel, IExcluivel
@@ -25,12 +27,13 @@ public abstract class RaizAgregadaAuditavel<TId> : Entidade<TId>, IAuditavel, IE
             return;
 
         if (excluidoEm == default)
-            throw new ArgumentException("A data de exclusao e obrigatoria.", nameof(excluidoEm));
+            throw new ErroDeValidacao("A data de exclusao e obrigatoria.", nameof(excluidoEm));
 
         if (excluidoEm.Kind != DateTimeKind.Utc)
-            throw new ArgumentException("A data de exclusao deve estar em UTC.", nameof(excluidoEm));
+            throw new ErroDeValidacao("A data de exclusao deve estar em UTC.", nameof(excluidoEm));
 
-        ArgumentException.ThrowIfNullOrWhiteSpace(excluidoPor);
+        if (string.IsNullOrWhiteSpace(excluidoPor))
+            throw new ErroDeValidacao("O usuario da exclusao e obrigatorio.", nameof(excluidoPor));
 
         Excluido = true;
         ExcluidoEm = excluidoEm;

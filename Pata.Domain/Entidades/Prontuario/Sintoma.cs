@@ -1,3 +1,5 @@
+using Pata.Domain.Excecoes;
+
 namespace Pata.Domain.Entidades.Prontuario;
 
 public sealed record Sintoma
@@ -6,14 +8,15 @@ public sealed record Sintoma
 
     public Sintoma(string descricao)
     {
-        ArgumentException.ThrowIfNullOrWhiteSpace(descricao);
+        if (string.IsNullOrWhiteSpace(descricao))
+            throw new ErroDeValidacao("Descricao e obrigatoria.", nameof(descricao));
 
         var descricaoNormalizada = descricao.Trim();
 
         if (descricaoNormalizada.Length > TamanhoMaximoDescricao)
-            throw new ArgumentOutOfRangeException(
-                nameof(descricao),
-                $"A descricao do sintoma deve ter no maximo {TamanhoMaximoDescricao} caracteres.");
+            throw new ErroDeValidacao(
+                $"A descricao do sintoma deve ter no maximo {TamanhoMaximoDescricao} caracteres.",
+                nameof(descricao));
 
         Descricao = descricaoNormalizada;
     }

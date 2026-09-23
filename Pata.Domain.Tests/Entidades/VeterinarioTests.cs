@@ -1,4 +1,5 @@
 using Pata.Domain.Entidades.Veterinario;
+using Pata.Domain.Excecoes;
 using Pata.Domain.ObjetosValor;
 
 namespace Pata.Domain.Tests.Entidades;
@@ -30,7 +31,7 @@ public class VeterinarioTests
     [Fact]
     public void DeveRejeitarCrmvNuloNoCadastro()
     {
-        Assert.Throws<ArgumentNullException>(() => new Veterinario(
+        Assert.Throws<ErroDeValidacao>(() => new Veterinario(
             "Ana Silva",
             EmailValido,
             TelefoneValido,
@@ -45,7 +46,7 @@ public class VeterinarioTests
     [InlineData("Ana Silva", "   ")]
     public void DeveRejeitarDadosObrigatoriosInvalidos(string nome, string especialidade)
     {
-        Assert.Throws<ArgumentException>(() => new Veterinario(
+        Assert.Throws<ErroDeValidacao>(() => new Veterinario(
             nome,
             EmailValido,
             TelefoneValido,
@@ -56,9 +57,9 @@ public class VeterinarioTests
     [Fact]
     public void DeveRejeitarObjetosValorNulos()
     {
-        Assert.Throws<ArgumentNullException>(() => new Veterinario(
+        Assert.Throws<ErroDeValidacao>(() => new Veterinario(
             "Ana Silva", null!, TelefoneValido, CrmvValido, "Clinica"));
-        Assert.Throws<ArgumentNullException>(() => new Veterinario(
+        Assert.Throws<ErroDeValidacao>(() => new Veterinario(
             "Ana Silva", EmailValido, null!, CrmvValido, "Clinica"));
     }
 

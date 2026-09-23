@@ -4,6 +4,7 @@ using Pata.Application.Funcionalidades.Veterinario.Consultas.ListarVeterinarios;
 using Pata.Application.Funcionalidades.Veterinario.Consultas.ListarVeterinariosExcluidos;
 using Pata.Application.Funcionalidades.Veterinario.Consultas.ObterVeterinarioPorCrmv;
 using Pata.Application.Tests.Apoio;
+using Pata.Domain.Excecoes;
 
 namespace Pata.Application.Tests.Funcionalidades.Veterinario;
 
@@ -81,7 +82,7 @@ public class ConsultasVeterinarioTests
         var manipulador = new ListarVeterinariosManipulador(
             new ConsultaVeterinariosFalsa());
 
-        await Assert.ThrowsAsync<ArgumentOutOfRangeException>(() =>
+        await Assert.ThrowsAsync<ErroDeValidacao>(() =>
             manipulador.Handle(
                 new ListarVeterinariosConsulta(pagina, tamanhoPagina),
                 CancellationToken.None));

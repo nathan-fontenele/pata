@@ -1,4 +1,5 @@
 using Pata.Application.Comum.Mensagens;
+using Pata.Domain.Excecoes;
 using Pata.Domain.ObjetosValor;
 using Pata.Domain.Repositorios;
 using TutorAgregado = Pata.Domain.Entidades.Tutor.Tutor;
@@ -15,22 +16,16 @@ public sealed class CriarTutorManipulador(IRepositorioTutor repositorioTutor)
         var cpf = new Cpf(comando.Cpf);
 
         if (await repositorioTutor.ExisteCpfIncluindoExcluidosAsync(cpf, tokenCancelamento))
-            throw new InvalidOperationException("Ja existe um tutor com o CPF informado.");
+            throw new ConflitoException("Ja existe um tutor com o CPF informado.");
 
         var tutor = new TutorAgregado(
             comando.Nome,
             cpf,
-            CriarEmail(comando.Email),
-            CriarTelefone(comando.Telefone));
+            new Email(comando.Email),
+            new Telefone(comando.Telefone));
 
         await repositorioTutor.AdicionarAsync(tutor, tokenCancelamento);
 
         return tutor.Id;
     }
-
-    private static Email? CriarEmail(string? email) =>
-        email is null ? null : new Email(email);
-
-    private static Telefone? CriarTelefone(string? telefone) =>
-        telefone is null ? null : new Telefone(telefone);
 }

@@ -1,4 +1,5 @@
 using Pata.Domain.Comum;
+using Pata.Domain.Excecoes;
 using Pata.Domain.ObjetosValor;
 
 namespace Pata.Domain.Entidades.Veterinario;
@@ -21,9 +22,12 @@ public sealed class Veterinario : RaizAgregadaAuditavel<Guid>
         Crmv crmv,
         string especialidade) : base(Guid.NewGuid())
     {
-        ArgumentNullException.ThrowIfNull(email);
-        ArgumentNullException.ThrowIfNull(telefone);
-        ArgumentNullException.ThrowIfNull(crmv);
+        if (email is null)
+            throw new ErroDeValidacao("E-mail e obrigatorio.", nameof(email));
+        if (telefone is null)
+            throw new ErroDeValidacao("Telefone e obrigatorio.", nameof(telefone));
+        if (crmv is null)
+            throw new ErroDeValidacao("CRMV e obrigatorio.", nameof(crmv));
 
         Nome = ValidarTexto(nome, TamanhoMaximoNome, nameof(nome));
         Email = email;
@@ -40,13 +44,15 @@ public sealed class Veterinario : RaizAgregadaAuditavel<Guid>
 
     public void AlterarEmail(Email email)
     {
-        ArgumentNullException.ThrowIfNull(email);
+        if (email is null)
+            throw new ErroDeValidacao("E-mail e obrigatorio.", nameof(email));
         Email = email;
     }
 
     public void AlterarTelefone(Telefone telefone)
     {
-        ArgumentNullException.ThrowIfNull(telefone);
+        if (telefone is null)
+            throw new ErroDeValidacao("Telefone e obrigatorio.", nameof(telefone));
         Telefone = telefone;
     }
 
@@ -58,14 +64,15 @@ public sealed class Veterinario : RaizAgregadaAuditavel<Guid>
 
     private static string ValidarTexto(string valor, int tamanhoMaximo, string nomeParametro)
     {
-        ArgumentException.ThrowIfNullOrWhiteSpace(valor, nomeParametro);
+        if (string.IsNullOrWhiteSpace(valor))
+            throw new ErroDeValidacao("O campo e obrigatorio.", nomeParametro);
 
         var valorNormalizado = valor.Trim();
 
         if (valorNormalizado.Length > tamanhoMaximo)
-            throw new ArgumentOutOfRangeException(
-                nomeParametro,
-                $"O campo deve ter no maximo {tamanhoMaximo} caracteres.");
+            throw new ErroDeValidacao(
+                $"O campo deve ter no maximo {tamanhoMaximo} caracteres.",
+                nomeParametro);
 
         return valorNormalizado;
     }

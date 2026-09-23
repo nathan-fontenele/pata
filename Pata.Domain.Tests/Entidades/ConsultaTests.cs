@@ -1,5 +1,6 @@
 using Pata.Domain.Entidades.Consulta;
 using Pata.Domain.Entidades.Prontuario;
+using Pata.Domain.Excecoes;
 
 namespace Pata.Domain.Tests.Entidades;
 
@@ -35,7 +36,7 @@ public class ConsultaTests
         var veterinarioId = identificador == "veterinario" ? Guid.Empty : Guid.NewGuid();
         var tutorId = identificador == "tutor" ? Guid.Empty : Guid.NewGuid();
 
-        Assert.Throws<ArgumentException>(() =>
+        Assert.Throws<ErroDeValidacao>(() =>
             new Consulta(animalId, veterinarioId, tutorId, DataHora, DataAtual));
     }
 
@@ -46,7 +47,7 @@ public class ConsultaTests
     {
         var dataHora = DataAtual.AddMinutes(minutos);
 
-        Assert.Throws<ArgumentOutOfRangeException>(() =>
+        Assert.Throws<ErroDeValidacao>(() =>
             new Consulta(Guid.NewGuid(), Guid.NewGuid(), Guid.NewGuid(), dataHora, DataAtual));
     }
 
@@ -55,9 +56,20 @@ public class ConsultaTests
     {
         var consulta = CriarConsulta();
 
-        consulta.Confirmar();
+        consulta.Confirmar(DataAtual);
 
         Assert.Equal(StatusConsulta.Confirmada, consulta.Status);
+        Assert.Equal(DataAtual, consulta.ConfirmadaEm);
+    }
+
+    [Fact]
+    public void DeveRejeitarConfirmacaoSemData()
+    {
+        var consulta = CriarConsulta();
+
+        Assert.Throws<ErroDeValidacao>(() => consulta.Confirmar(default));
+        Assert.Equal(StatusConsulta.Agendada, consulta.Status);
+        Assert.Null(consulta.ConfirmadaEm);
     }
 
     [Fact]
@@ -74,7 +86,7 @@ public class ConsultaTests
     public void DeveCancelarConsultaConfirmada()
     {
         var consulta = CriarConsulta();
-        consulta.Confirmar();
+        consulta.Confirmar(DataAtual);
 
         consulta.Cancelar();
 
@@ -85,11 +97,11 @@ public class ConsultaTests
     public void DeveRealizarConsultaConfirmada()
     {
         var consulta = CriarConsulta();
-        consulta.Confirmar();
+        consulta.Confirmar(DataAtual);
 
         RealizarConsulta(consulta);
 
-        Assert.Equal(StatusConsulta.Realizada, consulta.Status);
+        Assert.Equal(StatusConsulta.Finalizada, consulta.Status);
         Assert.NotNull(consulta.Prontuario);
         Assert.Equal(consulta.Id, consulta.Prontuario.ConsultaId);
     }
@@ -99,12 +111,13 @@ public class ConsultaTests
     {
         var consulta = CriarConsulta();
         var novaDataHora = DataHora.AddDays(1);
-        consulta.Confirmar();
+        consulta.Confirmar(DataAtual);
 
         consulta.Remarcar(novaDataHora, DataAtual);
 
         Assert.Equal(novaDataHora, consulta.DataHora);
         Assert.Equal(StatusConsulta.Agendada, consulta.Status);
+        Assert.Null(consulta.ConfirmadaEm);
     }
 
     [Fact]
@@ -124,7 +137,7 @@ public class ConsultaTests
         var consulta = CriarConsulta();
         var veterinarioOriginal = consulta.VeterinarioId;
 
-        Assert.Throws<ArgumentException>(() => consulta.SubstituirVeterinario(Guid.Empty));
+        Assert.Throws<ErroDeValidacao>(() => consulta.SubstituirVeterinario(Guid.Empty));
         Assert.Equal(veterinarioOriginal, consulta.VeterinarioId);
     }
 
@@ -135,47 +148,48 @@ public class ConsultaTests
     {
         var consulta = CriarConsulta();
 
-        Assert.Throws<ArgumentOutOfRangeException>(() =>
+        Assert.Throws<ErroDeValidacao>(() =>
             consulta.Remarcar(DataAtual.AddMinutes(minutos), DataAtual));
         Assert.Equal(DataHora, consulta.DataHora);
         Assert.Equal(StatusConsulta.Agendada, consulta.Status);
     }
 
     [Fact]
-    public void DeveRejeitarRealizacaoDeConsultaNaoConfirmada()
+    public void DeveFinalizarConsultaAgendada()
     {
         var consulta = CriarConsulta();
 
-        Assert.Throws<InvalidOperationException>(() => RealizarConsulta(consulta));
-        Assert.Equal(StatusConsulta.Agendada, consulta.Status);
+        RealizarConsulta(consulta);
+
+        Assert.Equal(StatusConsulta.Finalizada, consulta.Status);
     }
 
     [Fact]
     public void DeveRejeitarConfirmacaoDeConsultaJaConfirmada()
     {
         var consulta = CriarConsulta();
-        consulta.Confirmar();
+        consulta.Confirmar(DataAtual);
 
-        Assert.Throws<InvalidOperationException>(consulta.Confirmar);
+        Assert.Throws<RegraDeNegocioException>(() => consulta.Confirmar(DataAtual));
         Assert.Equal(StatusConsulta.Confirmada, consulta.Status);
     }
 
     [Theory]
     [InlineData(StatusConsulta.Cancelada)]
-    [InlineData(StatusConsulta.Realizada)]
+    [InlineData(StatusConsulta.Finalizada)]
     public void DeveImpedirAlteracoesEmConsultaEncerrada(StatusConsulta statusFinal)
     {
         var consulta = CriarConsultaEncerrada(statusFinal);
         var dataHoraOriginal = consulta.DataHora;
         var veterinarioOriginal = consulta.VeterinarioId;
 
-        Assert.Throws<InvalidOperationException>(() =>
+        Assert.Throws<RegraDeNegocioException>(() =>
             consulta.Remarcar(DataHora.AddDays(1), DataAtual));
-        Assert.Throws<InvalidOperationException>(() =>
+        Assert.Throws<RegraDeNegocioException>(() =>
             consulta.SubstituirVeterinario(Guid.NewGuid()));
-        Assert.Throws<InvalidOperationException>(consulta.Cancelar);
-        Assert.Throws<InvalidOperationException>(consulta.Confirmar);
-        Assert.Throws<InvalidOperationException>(() => RealizarConsulta(consulta));
+        Assert.Throws<RegraDeNegocioException>(consulta.Cancelar);
+        Assert.Throws<RegraDeNegocioException>(() => consulta.Confirmar(DataAtual));
+        Assert.Throws<RegraDeNegocioException>(() => RealizarConsulta(consulta));
 
         Assert.Equal(dataHoraOriginal, consulta.DataHora);
         Assert.Equal(veterinarioOriginal, consulta.VeterinarioId);
@@ -189,9 +203,9 @@ public class ConsultaTests
     {
         var consulta = CriarConsulta();
 
-        if (statusFinal == StatusConsulta.Realizada)
+        if (statusFinal == StatusConsulta.Finalizada)
         {
-            consulta.Confirmar();
+            consulta.Confirmar(DataAtual);
             RealizarConsulta(consulta);
         }
         else
@@ -203,7 +217,7 @@ public class ConsultaTests
     }
 
     private static void RealizarConsulta(Consulta consulta) =>
-        consulta.Realizar(
+        consulta.Finalizar(
             [new Sintoma("Febre")],
             "Virose",
             "Repouso e hidratacao",

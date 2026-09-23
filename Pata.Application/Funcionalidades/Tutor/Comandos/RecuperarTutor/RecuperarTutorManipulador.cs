@@ -1,4 +1,5 @@
 using Pata.Application.Comum.Mensagens;
+using Pata.Domain.Excecoes;
 using Pata.Domain.Repositorios;
 
 namespace Pata.Application.Funcionalidades.Tutor.Comandos.RecuperarTutor;
@@ -13,7 +14,7 @@ public sealed class RecuperarTutorManipulador(IRepositorioTutor repositorioTutor
         var tutor = await repositorioTutor.ObterPorIdIncluindoExcluidosAsync(
                         comando.Id,
                         tokenCancelamento)
-                    ?? throw new KeyNotFoundException("Tutor nao encontrado.");
+                    ?? throw new RecursoNaoEncontradoException("Tutor nao encontrado.");
 
         tutor.Recuperar();
 

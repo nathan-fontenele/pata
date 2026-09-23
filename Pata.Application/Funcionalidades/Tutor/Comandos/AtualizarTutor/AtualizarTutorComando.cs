@@ -5,5 +5,5 @@ namespace Pata.Application.Funcionalidades.Tutor.Comandos.AtualizarTutor;
 public sealed record AtualizarTutorComando(
     Guid Id,
     string Nome,
-    string? Email,
-    string? Telefone) : IComando;
+    string Email,
+    string Telefone) : IComando;

@@ -1,4 +1,5 @@
 using Pata.Domain.ObjetosValor;
+using Pata.Domain.Excecoes;
 
 namespace Pata.Domain.Tests.ObjetosValor;
 
@@ -37,6 +38,6 @@ public class TelefoneTests
     [InlineData("")]
     public void DeveRejeitarTelefoneInvalido(string entrada)
     {
-        Assert.Throws<ArgumentException>(() => new Telefone(entrada));
+        Assert.Throws<ErroDeValidacao>(() => new Telefone(entrada));
     }
 }

@@ -1,4 +1,5 @@
 using Pata.Domain.ObjetosValor;
+using Pata.Domain.Excecoes;
 
 namespace Pata.Domain.Tests.ObjetosValor;
 
@@ -22,6 +23,6 @@ public class EmailTests
     [InlineData("")]
     public void DeveRejeitarEmailInvalido(string entrada)
     {
-        Assert.Throws<ArgumentException>(() => new Email(entrada));
+        Assert.Throws<ErroDeValidacao>(() => new Email(entrada));
     }
 }

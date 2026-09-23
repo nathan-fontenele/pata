@@ -1,4 +1,5 @@
 using Pata.Domain.Entidades.Tutor;
+using Pata.Domain.Excecoes;
 using Pata.Domain.ObjetosValor;
 
 namespace Pata.Domain.Tests.Entidades;
@@ -6,6 +7,8 @@ namespace Pata.Domain.Tests.Entidades;
 public class TutorTests
 {
     private static readonly Cpf CpfValido = new("529.982.247-25");
+    private static readonly Email EmailValido = new("tutor@pata.com.br");
+    private static readonly Telefone TelefoneValido = new("(11) 91234-5678");
 
     [Fact]
     public void DeveCriarTutorComDadosValidos()
@@ -27,19 +30,30 @@ public class TutorTests
     [InlineData("   ")]
     public void DeveRejeitarNomeInvalido(string nome)
     {
-        Assert.Throws<ArgumentException>(() => new Tutor(nome, CpfValido, null, null));
+        Assert.Throws<ErroDeValidacao>(() =>
+            new Tutor(nome, CpfValido, EmailValido, TelefoneValido));
     }
 
     [Fact]
     public void DeveRejeitarCpfNulo()
     {
-        Assert.Throws<ArgumentNullException>(() => new Tutor("Maria Silva", null!, null, null));
+        Assert.Throws<ErroDeValidacao>(() =>
+            new Tutor("Maria Silva", null!, EmailValido, TelefoneValido));
+    }
+
+    [Fact]
+    public void DeveRejeitarDadosDeContatoNulos()
+    {
+        Assert.Throws<ErroDeValidacao>(() =>
+            new Tutor("Maria Silva", CpfValido, null!, TelefoneValido));
+        Assert.Throws<ErroDeValidacao>(() =>
+            new Tutor("Maria Silva", CpfValido, EmailValido, null!));
     }
 
     [Fact]
     public void DeveAlterarDadosDoTutor()
     {
-        var tutor = new Tutor("Maria Silva", CpfValido, null, null);
+        var tutor = CriarTutor();
         var email = new Email("novo@pata.com.br");
         var telefone = new Telefone("(11) 3456-7890");
 
@@ -53,7 +67,7 @@ public class TutorTests
     }
 
     [Fact]
-    public void DevePermitirRemoverDadosDeContato()
+    public void DeveRejeitarRemocaoDosDadosDeContato()
     {
         var tutor = new Tutor(
             "Maria Silva",
@@ -61,17 +75,14 @@ public class TutorTests
             new Email("tutor@pata.com.br"),
             new Telefone("(11) 91234-5678"));
 
-        tutor.AlterarEmail(null);
-        tutor.AlterarTelefone(null);
-
-        Assert.Null(tutor.Email);
-        Assert.Null(tutor.Telefone);
+        Assert.Throws<ErroDeValidacao>(() => tutor.AlterarEmail(null!));
+        Assert.Throws<ErroDeValidacao>(() => tutor.AlterarTelefone(null!));
     }
 
     [Fact]
     public void DeveExcluirTutorLogicamente()
     {
-        var tutor = new Tutor("Maria Silva", CpfValido, null, null);
+        var tutor = CriarTutor();
         var excluidoEm = new DateTime(2026, 8, 9, 12, 30, 0, DateTimeKind.Utc);
 
         tutor.Excluir(excluidoEm, "  usuario@pata.com.br  ");
@@ -84,7 +95,7 @@ public class TutorTests
     [Fact]
     public void DeveRecuperarTutorExcluido()
     {
-        var tutor = new Tutor("Maria Silva", CpfValido, null, null);
+        var tutor = CriarTutor();
         tutor.Excluir(DateTime.UtcNow, "usuario@pata.com.br");
 
         tutor.Recuperar();
@@ -97,10 +108,13 @@ public class TutorTests
     [Fact]
     public void DeveRejeitarDataDeExclusaoForaDeUtc()
     {
-        var tutor = new Tutor("Maria Silva", CpfValido, null, null);
+        var tutor = CriarTutor();
         var excluidoEm = new DateTime(2026, 8, 9, 12, 30, 0, DateTimeKind.Local);
 
-        Assert.Throws<ArgumentException>(() =>
+        Assert.Throws<ErroDeValidacao>(() =>
             tutor.Excluir(excluidoEm, "usuario@pata.com.br"));
     }
+
+    private static Tutor CriarTutor() =>
+        new("Maria Silva", CpfValido, EmailValido, TelefoneValido);
 }

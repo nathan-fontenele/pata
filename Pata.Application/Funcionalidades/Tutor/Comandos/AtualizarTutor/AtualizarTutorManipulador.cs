@@ -1,4 +1,5 @@
 using Pata.Application.Comum.Mensagens;
+using Pata.Domain.Excecoes;
 using Pata.Domain.ObjetosValor;
 using Pata.Domain.Repositorios;
 
@@ -12,11 +13,11 @@ public sealed class AtualizarTutorManipulador(IRepositorioTutor repositorioTutor
         CancellationToken tokenCancelamento)
     {
         var tutor = await repositorioTutor.ObterPorIdAsync(comando.Id, tokenCancelamento)
-                    ?? throw new KeyNotFoundException("Tutor nao encontrado.");
+                    ?? throw new RecursoNaoEncontradoException("Tutor nao encontrado.");
 
         tutor.AlterarNome(comando.Nome);
-        tutor.AlterarEmail(comando.Email is null ? null : new Email(comando.Email));
-        tutor.AlterarTelefone(comando.Telefone is null ? null : new Telefone(comando.Telefone));
+        tutor.AlterarEmail(new Email(comando.Email));
+        tutor.AlterarTelefone(new Telefone(comando.Telefone));
 
         await repositorioTutor.AtualizarAsync(tutor, tokenCancelamento);
     }

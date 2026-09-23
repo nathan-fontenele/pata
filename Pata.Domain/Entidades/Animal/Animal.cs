@@ -1,11 +1,13 @@
 using Pata.Domain.Comum;
 using Pata.Domain.Entidades.Animal.Enum;
+using Pata.Domain.Excecoes;
 
 namespace Pata.Domain.Entidades.Animal;
 
 public sealed class Animal : Entidade<Guid>
 {
     public const int TamanhoMaximoNome = 100;
+    public const int TamanhoMaximoRaca = 100;
 
     private Animal()
     {
@@ -16,25 +18,27 @@ public sealed class Animal : Entidade<Guid>
         Guid tutorId,
         string nome,
         Especie especie,
+        string raca,
         DateOnly dataNascimento,
         DateOnly dataAtual) : base(id)
     {
         if (tutorId == Guid.Empty)
-            throw new ArgumentException("Tutor e obrigatorio.", nameof(tutorId));
+            throw new ErroDeValidacao("Tutor e obrigatorio.", nameof(tutorId));
 
         TutorId = tutorId;
-        AplicarDados(nome, especie, dataNascimento, dataAtual);
+        AplicarDados(nome, especie, raca, dataNascimento, dataAtual);
     }
 
     public Guid TutorId { get; private set; }
     public string Nome { get; private set; } = null!;
     public Especie Especie { get; private set; }
+    public string Raca { get; private set; } = null!;
     public DateOnly DataNascimento { get; private set; }
 
     public int CalcularIdade(DateOnly dataReferencia)
     {
         if (dataReferencia < DataNascimento)
-            throw new ArgumentException(
+            throw new ErroDeValidacao(
                 "A data de referencia nao pode ser anterior ao nascimento.",
                 nameof(dataReferencia));
 
@@ -49,34 +53,48 @@ public sealed class Animal : Entidade<Guid>
     internal void AlterarDados(
         string nome,
         Especie especie,
+        string raca,
         DateOnly dataNascimento,
-        DateOnly dataAtual) => AplicarDados(nome, especie, dataNascimento, dataAtual);
+        DateOnly dataAtual) => AplicarDados(nome, especie, raca, dataNascimento, dataAtual);
 
     private void AplicarDados(
         string nome,
         Especie especie,
+        string raca,
         DateOnly dataNascimento,
         DateOnly dataAtual)
     {
-        ArgumentException.ThrowIfNullOrWhiteSpace(nome);
+        if (string.IsNullOrWhiteSpace(nome))
+            throw new ErroDeValidacao("Nome e obrigatorio.", nameof(nome));
 
         var nomeNormalizado = nome.Trim();
 
         if (nomeNormalizado.Length > TamanhoMaximoNome)
-            throw new ArgumentOutOfRangeException(
-                nameof(nome),
-                $"O nome deve ter no maximo {TamanhoMaximoNome} caracteres.");
+            throw new ErroDeValidacao(
+                $"O nome deve ter no maximo {TamanhoMaximoNome} caracteres.",
+                nameof(nome));
 
         if (!System.Enum.IsDefined(especie))
-            throw new ArgumentOutOfRangeException(nameof(especie), "Especie invalida.");
+            throw new ErroDeValidacao("Especie invalida.", nameof(especie));
+
+        if (string.IsNullOrWhiteSpace(raca))
+            throw new ErroDeValidacao("Raca e obrigatoria.", nameof(raca));
+
+        var racaNormalizada = raca.Trim();
+
+        if (racaNormalizada.Length > TamanhoMaximoRaca)
+            throw new ErroDeValidacao(
+                $"A raca deve ter no maximo {TamanhoMaximoRaca} caracteres.",
+                nameof(raca));
 
         if (dataNascimento > dataAtual)
-            throw new ArgumentOutOfRangeException(
-                nameof(dataNascimento),
-                "A data de nascimento nao pode estar no futuro.");
+            throw new ErroDeValidacao(
+                "A data de nascimento nao pode estar no futuro.",
+                nameof(dataNascimento));
 
         Nome = nomeNormalizado;
         Especie = especie;
+        Raca = racaNormalizada;
         DataNascimento = dataNascimento;
     }
 }

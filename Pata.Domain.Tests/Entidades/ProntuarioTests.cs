@@ -1,5 +1,6 @@
 using Pata.Domain.Entidades.Consulta;
 using Pata.Domain.Entidades.Prontuario;
+using Pata.Domain.Excecoes;
 
 namespace Pata.Domain.Tests.Entidades;
 
@@ -23,7 +24,7 @@ public class ProntuarioTests
         Assert.Equal("Virose", prontuario.Diagnostico);
         Assert.Equal("Repouso", prontuario.Prescricao);
         Assert.Equal(DataHora, prontuario.DataRegistro);
-        Assert.Equal(StatusConsulta.Realizada, consulta.Status);
+        Assert.Equal(StatusConsulta.Finalizada, consulta.Status);
     }
 
     [Fact]
@@ -67,7 +68,7 @@ public class ProntuarioTests
     {
         var consulta = CriarConsultaConfirmada();
 
-        Assert.Throws<ArgumentException>(() =>
+        Assert.Throws<ErroDeValidacao>(() =>
             consulta.Realizar([], null, null, DataHora));
         Assert.Null(consulta.Prontuario);
         Assert.Equal(StatusConsulta.Confirmada, consulta.Status);
@@ -78,7 +79,7 @@ public class ProntuarioTests
     {
         var consulta = CriarConsultaConfirmada();
 
-        Assert.Throws<ArgumentNullException>(() =>
+        Assert.Throws<ErroDeValidacao>(() =>
             consulta.Realizar(null!, null, null, DataHora));
         Assert.Null(consulta.Prontuario);
         Assert.Equal(StatusConsulta.Confirmada, consulta.Status);
@@ -89,7 +90,7 @@ public class ProntuarioTests
     {
         var consulta = CriarConsultaConfirmada();
 
-        Assert.Throws<ArgumentException>(() => consulta.Realizar(
+        Assert.Throws<ErroDeValidacao>(() => consulta.Realizar(
             [new Sintoma("Febre"), new Sintoma("febre")],
             null,
             null,
@@ -105,7 +106,7 @@ public class ProntuarioTests
         consulta.Realizar([new Sintoma("Febre")], null, null, DataHora);
         var prontuarioOriginal = consulta.Prontuario;
 
-        Assert.Throws<InvalidOperationException>(() => consulta.Realizar(
+        Assert.Throws<RegraDeNegocioException>(() => consulta.Realizar(
             [new Sintoma("Tosse")],
             null,
             null,
@@ -118,7 +119,7 @@ public class ProntuarioTests
     {
         var consulta = CriarConsultaConfirmada();
 
-        Assert.Throws<ArgumentException>(() =>
+        Assert.Throws<ErroDeValidacao>(() =>
             consulta.Realizar([new Sintoma("Febre")], null, null, default));
         Assert.Null(consulta.Prontuario);
         Assert.Equal(StatusConsulta.Confirmada, consulta.Status);
@@ -129,7 +130,7 @@ public class ProntuarioTests
     [InlineData("   ")]
     public void DeveRejeitarDescricaoDeSintomaVazia(string descricao)
     {
-        Assert.Throws<ArgumentException>(() => new Sintoma(descricao));
+        Assert.Throws<ErroDeValidacao>(() => new Sintoma(descricao));
     }
 
     [Fact]
@@ -137,7 +138,7 @@ public class ProntuarioTests
     {
         var descricao = new string('A', Sintoma.TamanhoMaximoDescricao + 1);
 
-        Assert.Throws<ArgumentOutOfRangeException>(() => new Sintoma(descricao));
+        Assert.Throws<ErroDeValidacao>(() => new Sintoma(descricao));
     }
 
     private static Consulta CriarConsultaConfirmada()
@@ -148,7 +149,7 @@ public class ProntuarioTests
             Guid.NewGuid(),
             DataHora,
             DataAtual);
-        consulta.Confirmar();
+        consulta.Confirmar(DataAtual);
         return consulta;
     }
 }

@@ -3,6 +3,7 @@ using Pata.Application.Funcionalidades.Veterinario.Comandos.CriarVeterinario;
 using Pata.Application.Funcionalidades.Veterinario.Comandos.ExcluirVeterinario;
 using Pata.Application.Funcionalidades.Veterinario.Comandos.RecuperarVeterinario;
 using Pata.Application.Tests.Apoio;
+using Pata.Domain.Excecoes;
 using Pata.Domain.ObjetosValor;
 using VeterinarioAgregado = Pata.Domain.Entidades.Veterinario.Veterinario;
 
@@ -50,7 +51,7 @@ public class ComandosVeterinarioTests
             "SP",
             "Clinica");
 
-        await Assert.ThrowsAsync<InvalidOperationException>(() =>
+        await Assert.ThrowsAsync<ConflitoException>(() =>
             manipulador.Handle(comando, CancellationToken.None));
 
         Assert.Null(repositorio.VeterinarioAdicionado);
@@ -140,7 +141,7 @@ public class ComandosVeterinarioTests
             "(11) 91234-5678",
             "Clinica");
 
-        await Assert.ThrowsAsync<KeyNotFoundException>(() =>
+        await Assert.ThrowsAsync<RecursoNaoEncontradoException>(() =>
             manipulador.Handle(comando, CancellationToken.None));
     }
 

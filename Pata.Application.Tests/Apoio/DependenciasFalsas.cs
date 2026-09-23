@@ -132,7 +132,12 @@ internal sealed class RelogioFalso(DateTime utcAgora) : IRelogio
     public DateTime UtcAgora { get; } = utcAgora;
 }
 
-internal sealed class UsuarioAtualFalso(string identificador) : IUsuarioAtual
+internal sealed class UsuarioAtualFalso(
+    string identificador,
+    string perfil = "Teste",
+    IReadOnlyCollection<string>? papeis = null) : IUsuarioAtual
 {
     public string Identificador { get; } = identificador;
+    public string Perfil { get; } = perfil;
+    public IReadOnlyCollection<string> Papeis { get; } = papeis ?? [];
 }

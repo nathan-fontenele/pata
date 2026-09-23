@@ -1,4 +1,5 @@
 using Pata.Domain.Comum;
+using Pata.Domain.Excecoes;
 
 namespace Pata.Domain.Entidades.Prontuario;
 
@@ -19,29 +20,30 @@ public sealed class Prontuario : Entidade<Guid>
         DateTimeOffset dataRegistro) : base(id)
     {
         if (consultaId == Guid.Empty)
-            throw new ArgumentException("Consulta e obrigatoria.", nameof(consultaId));
+            throw new ErroDeValidacao("Consulta e obrigatoria.", nameof(consultaId));
 
-        ArgumentNullException.ThrowIfNull(sintomas);
+        if (sintomas is null)
+            throw new ErroDeValidacao("Sintomas sao obrigatorios.", nameof(sintomas));
 
         var sintomasNormalizados = sintomas.ToList();
 
         if (sintomasNormalizados.Count == 0)
-            throw new ArgumentException(
+            throw new ErroDeValidacao(
                 "O prontuario deve possuir pelo menos um sintoma.",
                 nameof(sintomas));
 
         if (sintomasNormalizados.Any(sintoma => sintoma is null))
-            throw new ArgumentException("A lista contem um sintoma nulo.", nameof(sintomas));
+            throw new ErroDeValidacao("A lista contem um sintoma nulo.", nameof(sintomas));
 
         var possuiDuplicados = sintomasNormalizados
             .GroupBy(sintoma => sintoma.Descricao, StringComparer.OrdinalIgnoreCase)
             .Any(grupo => grupo.Count() > 1);
 
         if (possuiDuplicados)
-            throw new ArgumentException("O prontuario contem sintomas duplicados.", nameof(sintomas));
+            throw new ErroDeValidacao("O prontuario contem sintomas duplicados.", nameof(sintomas));
 
         if (dataRegistro == default)
-            throw new ArgumentException("A data de registro e obrigatoria.", nameof(dataRegistro));
+            throw new ErroDeValidacao("A data de registro e obrigatoria.", nameof(dataRegistro));
 
         ConsultaId = consultaId;
         _sintomas.AddRange(sintomasNormalizados);

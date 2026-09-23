@@ -1,4 +1,5 @@
 using Pata.Domain.ObjetosValor;
+using Pata.Domain.Excecoes;
 
 namespace Pata.Domain.Tests.ObjetosValor;
 
@@ -21,6 +22,6 @@ public class CpfTests
     [InlineData("")]
     public void DeveRejeitarCpfInvalido(string entrada)
     {
-        Assert.Throws<ArgumentException>(() => new Cpf(entrada));
+        Assert.Throws<ErroDeValidacao>(() => new Cpf(entrada));
     }
 }
